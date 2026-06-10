@@ -50,9 +50,10 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
+import { reactive } from "vue";
+import { LoadingModal, MessageModal, CloseModal } from "@/functions/swal";
+
 const router = useRouter();
 
 const user = reactive({
@@ -65,13 +66,29 @@ const userError = reactive({
     password: "",
 });
 
+const defaultUser = JSON.parse(JSON.stringify(user));
+const defaultUserError = JSON.parse(JSON.stringify(userError));
+
+function resetAllState() {
+    Object.assign(user, defaultUser);
+    Object.assign(userError, defaultUserError);
+}
+
 async function signIn() {
+    try {
+        LoadingModal('Signing In...');
 
-    // userError.email = "email error",
-    // userError.password = "password error",
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
 
-    // router.push({ name: 'Dashboard' })
-
-    Swal.fire("SweetAlert2 is working");
+        resetAllState();
+        router.replace({ name: "Dashboard" });
+        return CloseModal();
+    } catch (error) {
+        const { response } = error;
+        if (!response) {
+            return MessageModal({ icon: "error", title: "Error", text: error.message });
+        }
+        //!!! Handle validation errors from the server
+    }
 }
 </script>
